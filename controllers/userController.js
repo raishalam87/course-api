@@ -1,51 +1,38 @@
-const User = require("../models/User"); // User model import
+const User = require("../models/User");
 
-// Get user profile
+// @desc    Get logged in user's profile
 exports.getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const user = await User.findById(req.userId).select("-password");
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: "Error fetching profile", details: err.message });
   }
 };
 
-// Update user profile (including image upload)
+// @desc    Update profile (name, avatar)
 exports.updateMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const updates = {
+      name: req.body.name,
+      avatar: req.body.avatar,
+    };
 
-    // If an image is uploaded, save the image URL to the user's profile
-    if (req.file) {
-      user.avatar = `/uploads/${req.file.filename}`;  // Store image path in DB
-    }
+    const user = await User.findByIdAndUpdate(req.userId, updates, {
+      new: true,
+    }).select("-password");
 
-    // Update other fields like name
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-
-    // Save the updated user
-    await user.save();
-    res.json({ message: "Profile updated successfully", user });
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: "Error updating profile", details: err.message });
   }
 };
 
-// Delete user account
+// @desc    Delete account
 exports.deleteMyAccount = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.json({ message: "User account deleted successfully" });
+    await User.findByIdAndDelete(req.userId);
+    res.json({ message: "Account deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: "Error deleting account", details: err.message });
   }
