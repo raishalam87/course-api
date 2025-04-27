@@ -11,8 +11,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Corrected Route Path (ye pehle galat tha)
-app.use("/api/courses", require("./routes/courseRoutes"));
+// Route Paths
+app.use("/api/courses", require("./routes/courseRoutes")); // Courses related routes
+app.use("/api/users", require("./routes/userRoutes"));     // User profile routes
 
 // Base API check
 app.get("/", (req, res) => {
